@@ -12,10 +12,10 @@
   transition: filter 300ms;
 }
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+  filter: drop-shadow(0 0 2em #888888aa);
 }
 .logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  filter: drop-shadow(0 0 2em #b0b0b0aa);
 }
 
 @keyframes logo-spin {
@@ -37,6 +37,30 @@
   padding: 2em;
 }
 
-.read-the-docs {
-  color: #888;
+/* Grey theme overrides for file browser UI */
+body {
+  background: linear-gradient(135deg, #23272f 0%, #181c24 100%) !important;
+}
+
+/* General text color */
+#root, .card, .read-the-docs {
+  color: #b0b0b0;
+}
+
+/* Table and button backgrounds */
+table, th, td {
+  background: #23272f !important;
+  color: #b0b0b0 !important;
+}
+
+button, a {
+  background: #23272f !important;
+  color: #b0b0b0 !important;
+  border-color: #b0b0b0 !important;
+}
+
+input, select, textarea {
+  background: #181c24 !important;
+  color: #b0b0b0 !important;
+  border: 1px solid #444 !important;
 }
