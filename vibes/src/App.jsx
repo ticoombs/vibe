@@ -116,36 +116,36 @@ function App() {
       <div style={{ maxWidth: '85vw', width: '100%', margin: '0 auto', padding: 32, background: 'none', borderRadius: 0, boxShadow: 'none', marginTop: 0, position: 'relative' }}>
         <button
           onClick={handleLogout}
-          style={{ position: 'absolute', top: 24, right: 32, background: '#23272f', color: '#90caf9', border: '1px solid #90caf9', borderRadius: 6, padding: '8px 18px', fontWeight: 600, cursor: 'pointer', fontSize: 16, fontFamily: 'monospace' }}
+          style={{ position: 'absolute', top: 24, right: 32, background: '#23272f', color: '#b0b0b0', border: '1px solid #b0b0b0', borderRadius: 6, padding: '8px 18px', fontWeight: 600, cursor: 'pointer', fontSize: 16, fontFamily: 'monospace' }}
           aria-label="Logout"
         >Logout</button>
-        <h1 style={{ fontWeight: 700, fontSize: 32, marginBottom: 8, color: '#90caf9', letterSpacing: 1, fontFamily: 'monospace' }}>Files</h1>
+        {/* <h1 style={{ fontWeight: 700, fontSize: 32, marginBottom: 8, color: '#90caf9', letterSpacing: 1, fontFamily: 'monospace' }}>Files</h1> */}
         <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
         </div>
-        <div style={{ marginBottom: 12, fontSize: 15, color: '#90caf9', wordBreak: 'break-all', fontFamily: 'monospace' }}>Path: /{path}</div>
+        <div style={{ marginBottom: 12, fontSize: 15, color: '#b0b0b0', wordBreak: 'break-all', fontFamily: 'monospace' }}>Path: /{path}</div>
         <div style={{ borderRadius: 8, background: '#23272f', width: '100%', boxShadow: '0 2px 12px rgba(0,0,0,0.10)' }}>
-          <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: 16, color: '#90caf9', fontFamily: 'monospace' }} role="table" aria-label="File list">
+          <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: 16, color: '#b0b0b0', fontFamily: 'monospace' }} role="table" aria-label="File list">
             <thead>
               <tr style={{ background: '#23272f' }}>
-                <th scope="col" style={{ textAlign: 'justify', padding: '12px 6px', fontWeight: 700, letterSpacing: 0.5, color: '#90caf9', cursor: 'pointer', borderBottom: '1px solid #333', fontFamily: 'monospace' }} onClick={() => handleHeaderClick('name')} tabIndex={0} aria-sort={sort === 'name' ? order : 'none'}> Name {sort === 'name' && (order === 'asc' ? '▲' : '▼')}</th>
-                <th scope="col" style={{ textAlign: 'right', padding: '12px 6px', color: '#90caf9', cursor: 'pointer', borderBottom: '1px solid #333', fontFamily: 'monospace' }} onClick={() => handleHeaderClick('size')} tabIndex={0} aria-sort={sort === 'size' ? order : 'none'}> Size {sort === 'size' && (order === 'asc' ? '▲' : '▼')}</th>
-                <th scope="col" style={{ textAlign: 'justify', padding: '12px 6px', color: '#90caf9', cursor: 'pointer', borderBottom: '1px solid #333', fontFamily: 'monospace' }} onClick={() => handleHeaderClick('modified')} tabIndex={0} aria-sort={sort === 'modified' ? order : 'none'}> Modified {sort === 'modified' && (order === 'asc' ? '▲' : '▼')}</th>
-                <th scope="col" style={{ textAlign: 'center', padding: '12px 6px', color: '#90caf9', borderBottom: '1px solid #333', fontFamily: 'monospace' }}>Download</th>
+                <th scope="col" style={{ textAlign: 'justify', padding: '12px 6px', fontWeight: 700, letterSpacing: 0.5, color: '#b0b0b0', cursor: 'pointer', borderBottom: '1px solid #444', fontFamily: 'monospace' }} onClick={() => handleHeaderClick('name')} tabIndex={0} aria-sort={sort === 'name' ? order : 'none'}> Name {sort === 'name' && (order === 'asc' ? '▲' : '▼')}</th>
+                <th scope="col" style={{ textAlign: 'right', padding: '12px 6px', color: '#b0b0b0', cursor: 'pointer', borderBottom: '1px solid #444', fontFamily: 'monospace' }} onClick={() => handleHeaderClick('size')} tabIndex={0} aria-sort={sort === 'size' ? order : 'none'}> Size {sort === 'size' && (order === 'asc' ? '▲' : '▼')}</th>
+                <th scope="col" style={{ textAlign: 'justify', padding: '12px 6px', color: '#b0b0b0', cursor: 'pointer', borderBottom: '1px solid #444', fontFamily: 'monospace' }} onClick={() => handleHeaderClick('modified')} tabIndex={0} aria-sort={sort === 'modified' ? order : 'none'}> Modified {sort === 'modified' && (order === 'asc' ? '▲' : '▼')}</th>
+                <th scope="col" style={{ textAlign: 'center', padding: '12px 6px', color: '#b0b0b0', borderBottom: '1px solid #444', fontFamily: 'monospace' }}>Download</th>
               </tr>
             </thead>
             <tbody>
               {path && (
                 <tr>
-                  <td colSpan={4} style={{ wordBreak: 'break-all', padding: '10px 12px 10px 10px', color: '#90caf9', fontFamily: 'monospace', textAlign: 'justify', cursor: 'pointer' }}>
-                    <button style={{ background: 'none', border: 'none', color: '#90caf9', cursor: 'pointer', fontWeight: 600, fontSize: 16, fontFamily: 'monospace', padding: 0, textAlign: 'left' }} onClick={goUp} aria-label="Go up one folder">..</button>
+                  <td colSpan={4} style={{ wordBreak: 'break-all', padding: '10px 12px 10px 10px', color: '#b0b0b0', fontFamily: 'monospace', textAlign: 'justify', cursor: 'pointer' }}>
+                    <button style={{ background: 'none', border: 'none', color: '#b0b0b0', cursor: 'pointer', fontWeight: 600, fontSize: 16, fontFamily: 'monospace', padding: 0, textAlign: 'left' }} onClick={goUp} aria-label="Go up one folder">..</button>
                   </td>
                 </tr>
               )}
               {files.map(file => (
-                <tr key={file.name} style={{ borderBottom: '1px solid #333', background: file.is_dir ? '#181c24' : 'transparent' }}>
-                  <td style={{ wordBreak: 'break-all', padding: '10px 12px 10px 10px', fontWeight: file.is_dir ? 600 : 400, color: file.is_dir ? '#90caf9' : '#fff', fontFamily: 'monospace', textAlign: 'justify' }}>
+                <tr key={file.name} style={{ borderBottom: '1px solid #444', background: file.is_dir ? '#23272f' : 'transparent' }}>
+                  <td style={{ wordBreak: 'break-all', padding: '10px 12px 10px 10px', fontWeight: file.is_dir ? 600 : 400, color: file.is_dir ? '#b0b0b0' : '#fff', fontFamily: 'monospace', textAlign: 'justify' }}>
                     {file.is_dir ? (
-                      <button style={{ background: 'none', border: 'none', color: '#90caf9', cursor: 'pointer', textDecoration: 'underline', padding: 0, fontWeight: 600, fontSize: 16, fontFamily: 'monospace' }} onClick={() => enterFolder(file.name)} aria-label={`Enter folder ${file.name}`}> <span role="img" aria-label="folder">📂</span> {file.name} </button>
+                      <button style={{ background: 'none', border: 'none', color: '#b0b0b0', cursor: 'pointer', textDecoration: 'underline', padding: 0, fontWeight: 600, fontSize: 16, fontFamily: 'monospace' }} onClick={() => enterFolder(file.name)} aria-label={`Enter folder ${file.name}`}> <span role="img" aria-label="folder">📂</span> {file.name} </button>
                     ) : file.name}
                   </td>
                   <td style={{ textAlign: 'right', padding: '10px 6px', fontFamily: 'monospace' }}>{file.is_dir ? '-' : file.size}</td>
@@ -155,7 +155,7 @@ function App() {
                       <a href={`/download/${encodeURIComponent(path ? path + '/' + file.name : file.name)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ color: '#23272f', background: '#90caf9', fontWeight: 600, textDecoration: 'none', border: 'none', borderRadius: 4, padding: '4px 16px', fontFamily: 'monospace', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}
+                        style={{ color: '#23272f', background: '#b0b0b0', fontWeight: 600, textDecoration: 'none', border: 'none', borderRadius: 4, padding: '4px 16px', fontFamily: 'monospace', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}
                         aria-label={`Download ${file.name}`}
                       >Download</a>
                     )}
