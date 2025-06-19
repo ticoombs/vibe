@@ -140,7 +140,6 @@ function App() {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <form onSubmit={handleLogin} style={{ background: '#23272f', padding: 32, borderRadius: 12, boxShadow: '0 4px 24px rgba(0,0,0,0.18)', minWidth: 320 }}>
-          <h2 style={{ color: '#fff', marginBottom: 24, fontWeight: 700, letterSpacing: 1 }}>Login</h2>
           <input type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} style={{ width: '90%', marginBottom: 16, padding: 10, borderRadius: 6, border: '1px solid #444', background: '#181c24', color: '#fff', fontSize: 16 }} />
           <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} style={{ width: '90%', marginBottom: 16, padding: 10, borderRadius: 6, border: '1px solid #444', background: '#181c24', color: '#fff', fontSize: 16 }} />
           {loginError && <div style={{ color: '#ff5252', marginBottom: 12 }}>{loginError}</div>}
