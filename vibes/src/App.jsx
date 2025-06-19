@@ -31,6 +31,11 @@ function App() {
       });
   }, [path, token]);
 
+  function naturalCompare(a, b) {
+    // Use Intl.Collator with numeric option for natural sort
+    return new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' }).compare(a, b);
+  }
+
   useEffect(() => {
     let sorted = [...allFiles];
     // Always sort folders first, then files
@@ -38,8 +43,12 @@ function App() {
       if (a.is_dir && !b.is_dir) return -1;
       if (!a.is_dir && b.is_dir) return 1;
       let vA, vB;
-      if (sort === 'name') { vA = a.name.toLowerCase(); vB = b.name.toLowerCase(); }
-      else if (sort === 'size') { vA = a.size; vB = b.size; }
+      if (sort === 'name') {
+        vA = a.name;
+        vB = b.name;
+        const cmp = naturalCompare(vA, vB);
+        return order === 'asc' ? cmp : -cmp;
+      } else if (sort === 'size') { vA = a.size; vB = b.size; }
       else if (sort === 'modified') { vA = a.modified; vB = b.modified; }
       if (vA < vB) return order === 'asc' ? -1 : 1;
       if (vA > vB) return order === 'asc' ? 1 : -1;
@@ -152,12 +161,26 @@ function App() {
                   <td style={{ padding: '10px 6px', fontFamily: 'monospace', textAlign: 'justify' }}>{new Date(file.modified * 1000).toLocaleString()}</td>
                   <td style={{ textAlign: 'center', padding: '10px 6px', fontFamily: 'monospace' }}>
                     {!file.is_dir && (
-                      <a href={`/download/${encodeURIComponent(path ? path + '/' + file.name : file.name)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: '#23272f', background: '#b0b0b0', fontWeight: 600, textDecoration: 'none', border: 'none', borderRadius: 4, padding: '4px 16px', fontFamily: 'monospace', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}
-                        aria-label={`Download ${file.name}`}
-                      >Download</a>
+                      <form action={`/download/${encodeURIComponent(path ? path + '/' + file.name : file.name)}`} method="get" style={{ display: 'inline' }}>
+                        <button
+                          type="submit"
+                          style={{
+                            color: '#23272f',
+                            background: '#b0b0b0',
+                            fontWeight: 600,
+                            border: '1px solid #b0b0b0',
+                            borderRadius: 4,
+                            padding: '4px 16px',
+                            fontFamily: 'monospace',
+                            boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+                            cursor: 'pointer',
+                            fontSize: 15,
+                            textDecoration: 'none',
+                            outline: 'none',
+                          }}
+                          aria-label={`Download ${file.name}`}
+                        >Download</button>
+                      </form>
                     )}
                   </td>
                 </tr>
