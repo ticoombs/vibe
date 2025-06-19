@@ -13,8 +13,15 @@ function App() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
+  // Simple in-memory cache for folder listings
+  const [folderCache, setFolderCache] = useState({});
+
   useEffect(() => {
     if (!token) return;
+    if (folderCache[path]) {
+      setAllFiles(folderCache[path]);
+      return;
+    }
     fetch(`/files?sort=name&order=asc&path=${encodeURIComponent(path)}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
@@ -28,6 +35,7 @@ function App() {
       })
       .then(data => {
         setAllFiles(data);
+        setFolderCache(prev => ({ ...prev, [path]: data }));
       });
   }, [path, token]);
 
@@ -166,9 +174,15 @@ function App() {
             </thead>
             <tbody>
               {path && (
-                <tr>
-                  <td colSpan={4} style={{ wordBreak: 'break-all', padding: '10px 12px 10px 10px', color: '#b0b0b0', fontFamily: 'monospace', textAlign: 'justify', cursor: 'pointer' }}>
-                    <button style={{ background: 'none', border: 'none', color: '#b0b0b0', cursor: 'pointer', fontWeight: 600, fontSize: 16, fontFamily: 'monospace', padding: 0, textAlign: 'left' }} onClick={goUp} aria-label="Go up one folder">..</button>
+                <tr
+                  style={{ cursor: 'pointer', background: '#23272f' }}
+                  onClick={goUp}
+                  tabIndex={0}
+                  aria-label="Go up one folder"
+                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') goUp(); }}
+                >
+                  <td colSpan={4} style={{ wordBreak: 'break-all', padding: '10px 12px 10px 10px', color: '#b0b0b0', fontFamily: 'monospace', textAlign: 'justify' }}>
+                    <span style={{ fontWeight: 600, fontSize: 16, fontFamily: 'monospace' }}>..</span>
                   </td>
                 </tr>
               )}
