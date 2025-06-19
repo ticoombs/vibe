@@ -1,0 +1,127 @@
+from fastapi import FastAPI, Depends, HTTPException, status, Header
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import List
+import os
+import sqlite3
+from datetime import datetime
+from fastapi.responses import FileResponse
+from fastapi import Query
+import hashlib
+import secrets
+
+app = FastAPI()
+
+# Allow CORS for frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+DATABASE = "./users.db"
+FILES_ROOT = "shared_files"  # Use relative path from project root
+
+# --- Auth ---
+def get_db():
+    conn = sqlite3.connect(DATABASE)
+    try:
+        yield conn
+    finally:
+        conn.close()
+
+def create_user_table():
+    with sqlite3.connect(DATABASE) as conn:
+        conn.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL
+        )
+        """)
+create_user_table()
+
+# --- Secure password hashing ---
+def hash_password(password: str, salt: str = None):
+    if not salt:
+        salt = secrets.token_hex(16)
+    hashed = hashlib.pbkdf2_hmac('sha256', password.encode(), salt.encode(), 100_000)
+    return f"{salt}${hashed.hex()}"
+
+def verify_password(password: str, hashed: str):
+    salt, hash_val = hashed.split('$')
+    return hash_password(password, salt) == hashed
+
+# --- Models ---
+class FileInfo(BaseModel):
+    name: str
+    is_dir: bool
+    size: int
+    modified: float
+
+# --- Auth Endpoints ---
+@app.post("/login")
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db=Depends(get_db)):
+    cur = db.cursor()
+    cur.execute("SELECT password FROM users WHERE username=?", (form_data.username,))
+    row = cur.fetchone()
+    if not row or not verify_password(form_data.password, row[0]):
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
+    # In production, use JWT. For demo, return username as token.
+    return {"access_token": form_data.username, "token_type": "bearer"}
+
+def get_current_user(authorization: str = Header(None), db=Depends(get_db)):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    token = authorization.split(" ", 1)[1]
+    cur = db.cursor()
+    cur.execute("SELECT username FROM users WHERE username=?", (token,))
+    row = cur.fetchone()
+    if not row:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    return token
+
+# --- Utility to ensure test user exists ---
+def ensure_test_user():
+    with sqlite3.connect(DATABASE) as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM users WHERE username=?", ("test",))
+        if not cur.fetchone():
+            hashed = hash_password("test")
+            cur.execute("INSERT INTO users (username, password) VALUES (?, ?)", ("test", hashed))
+            conn.commit()
+ensure_test_user()
+
+# --- File Listing Endpoint ---
+@app.get("/files", response_model=List[FileInfo])
+def list_files(q: str = "", sort: str = "name", order: str = "asc", path: str = Query(default=""), user=Depends(get_current_user)):
+    dir_path = os.path.join(FILES_ROOT, path) if path else FILES_ROOT
+    if not os.path.isdir(dir_path):
+        raise HTTPException(status_code=404, detail="Directory not found")
+    files = []
+    for entry in os.scandir(dir_path):
+        if q.lower() in entry.name.lower():
+            stat = entry.stat()
+            files.append(FileInfo(
+                name=entry.name,
+                is_dir=entry.is_dir(),
+                size=stat.st_size,
+                modified=stat.st_mtime
+            ))
+    reverse = order == "desc"
+    if sort == "name":
+        files.sort(key=lambda x: x.name, reverse=reverse)
+    elif sort == "modified":
+        files.sort(key=lambda x: x.modified, reverse=reverse)
+    return files
+
+# --- File Download Endpoint ---
+@app.get("/download/{path:path}")
+def download_file(path: str, user=Depends(get_current_user)):
+    file_path = os.path.join(FILES_ROOT, path)
+    if not os.path.isfile(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(file_path, filename=os.path.basename(file_path))
