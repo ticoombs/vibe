@@ -106,6 +106,28 @@ function App() {
     else { setSort(col); setOrder('asc'); }
   };
 
+  // Download handler for files with auth
+  const handleDownload = async (fileName) => {
+    const fileUrl = `/download/${encodeURIComponent(path ? path + '/' + fileName : fileName)}`;
+    try {
+      const res = await fetch(fileUrl, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Download failed');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      alert('Download failed. Please try again.');
+    }
+  };
+
   if (!token) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -161,26 +183,25 @@ function App() {
                   <td style={{ padding: '10px 6px', fontFamily: 'monospace', textAlign: 'justify' }}>{new Date(file.modified * 1000).toLocaleString()}</td>
                   <td style={{ textAlign: 'center', padding: '10px 6px', fontFamily: 'monospace' }}>
                     {!file.is_dir && (
-                      <form action={`/download/${encodeURIComponent(path ? path + '/' + file.name : file.name)}`} method="get" style={{ display: 'inline' }}>
-                        <button
-                          type="submit"
-                          style={{
-                            color: '#23272f',
-                            background: '#b0b0b0',
-                            fontWeight: 600,
-                            border: '1px solid #b0b0b0',
-                            borderRadius: 4,
-                            padding: '4px 16px',
-                            fontFamily: 'monospace',
-                            boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-                            cursor: 'pointer',
-                            fontSize: 15,
-                            textDecoration: 'none',
-                            outline: 'none',
-                          }}
-                          aria-label={`Download ${file.name}`}
-                        >Download</button>
-                      </form>
+                      <button
+                        type="button"
+                        onClick={() => handleDownload(file.name)}
+                        style={{
+                          color: '#23272f',
+                          background: '#b0b0b0',
+                          fontWeight: 600,
+                          border: '1px solid #b0b0b0',
+                          borderRadius: 4,
+                          padding: '4px 16px',
+                          fontFamily: 'monospace',
+                          boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+                          cursor: 'pointer',
+                          fontSize: 15,
+                          textDecoration: 'none',
+                          outline: 'none',
+                        }}
+                        aria-label={`Download ${file.name}`}
+                      >Download</button>
                     )}
                   </td>
                 </tr>
