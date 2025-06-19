@@ -99,11 +99,11 @@ function App() {
 
   if (!token) {
     return (
-      <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #181c24 0%, #23272f 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <form onSubmit={handleLogin} style={{ background: '#23272f', padding: 32, borderRadius: 12, boxShadow: '0 4px 24px rgba(0,0,0,0.18)', minWidth: 320 }}>
           <h2 style={{ color: '#fff', marginBottom: 24, fontWeight: 700, letterSpacing: 1 }}>Login</h2>
-          <input type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} style={{ width: '100%', marginBottom: 16, padding: 10, borderRadius: 6, border: '1px solid #444', background: '#181c24', color: '#fff', fontSize: 16 }} />
-          <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} style={{ width: '100%', marginBottom: 16, padding: 10, borderRadius: 6, border: '1px solid #444', background: '#181c24', color: '#fff', fontSize: 16 }} />
+          <input type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} style={{ width: '90%', marginBottom: 16, padding: 10, borderRadius: 6, border: '1px solid #444', background: '#181c24', color: '#fff', fontSize: 16 }} />
+          <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} style={{ width: '90%', marginBottom: 16, padding: 10, borderRadius: 6, border: '1px solid #444', background: '#181c24', color: '#fff', fontSize: 16 }} />
           {loginError && <div style={{ color: '#ff5252', marginBottom: 12 }}>{loginError}</div>}
           <button type="submit" style={{ width: '100%', padding: 12, borderRadius: 6, border: 'none', background: '#1976d2', color: '#fff', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>Login</button>
         </form>
@@ -112,7 +112,7 @@ function App() {
   }
 
   return (
-    <div>
+    <div style={{ minHeight: '100vh'}}>
       <div style={{ maxWidth: '85vw', width: '100%', margin: '0 auto', padding: 32, background: 'none', borderRadius: 0, boxShadow: 'none', marginTop: 0, position: 'relative' }}>
         <button
           onClick={handleLogout}
@@ -121,7 +121,6 @@ function App() {
         >Logout</button>
         <h1 style={{ fontWeight: 700, fontSize: 32, marginBottom: 8, color: '#90caf9', letterSpacing: 1, fontFamily: 'monospace' }}>Files</h1>
         <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-          {path && <button onClick={goUp} style={{ padding: '8px 16px', borderRadius: 6, border: '1px solid #333', background: '#181c24', color: '#90caf9', fontWeight: 600, cursor: 'pointer', fontFamily: 'monospace' }} aria-label="Go up one folder">⬆️ Up</button>}
         </div>
         <div style={{ marginBottom: 12, fontSize: 15, color: '#90caf9', wordBreak: 'break-all', fontFamily: 'monospace' }}>Path: /{path}</div>
         <div style={{ borderRadius: 8, background: '#23272f', width: '100%', boxShadow: '0 2px 12px rgba(0,0,0,0.10)' }}>
@@ -135,6 +134,13 @@ function App() {
               </tr>
             </thead>
             <tbody>
+              {path && (
+                <tr>
+                  <td colSpan={4} style={{ wordBreak: 'break-all', padding: '10px 12px 10px 10px', color: '#90caf9', fontFamily: 'monospace', textAlign: 'justify', cursor: 'pointer' }}>
+                    <button style={{ background: 'none', border: 'none', color: '#90caf9', cursor: 'pointer', fontWeight: 600, fontSize: 16, fontFamily: 'monospace', padding: 0, textAlign: 'left' }} onClick={goUp} aria-label="Go up one folder">..</button>
+                  </td>
+                </tr>
+              )}
               {files.map(file => (
                 <tr key={file.name} style={{ borderBottom: '1px solid #333', background: file.is_dir ? '#181c24' : 'transparent' }}>
                   <td style={{ wordBreak: 'break-all', padding: '10px 12px 10px 10px', fontWeight: file.is_dir ? 600 : 400, color: file.is_dir ? '#90caf9' : '#fff', fontFamily: 'monospace', textAlign: 'justify' }}>
