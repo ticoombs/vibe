@@ -1,4 +1,4 @@
-FROM node:20-slim
+FROM node:20-slim as front
 
 WORKDIR /app
 COPY package*.json ./
@@ -10,6 +10,8 @@ ENV VITE_API_BASE_URL=https://backend:8000
 
 RUN npm run build
 
-EXPOSE 5173
 
-CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "5173"]
+FROM nginx:alpine
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=front /app/dist /usr/share/nginx/html
+

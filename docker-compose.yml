@@ -19,18 +19,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "127.0.0.1:5173:5173"
+      - "8800:80"
     depends_on:
       - backend
     environment:
       - ENV=production
-
-  proxy:
-    build:
-      context: ./proxy
-      dockerfile: Dockerfile
-    depends_on:
-      - backend
-      - frontend
-    ports:
-      - "8800:80"
