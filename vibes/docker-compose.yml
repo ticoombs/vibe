@@ -10,7 +10,7 @@ services:
       - ./shared_files:/app/shared_files
       - ./users.db:/app/users.db
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     environment:
       - ENV=production
 
@@ -19,7 +19,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "5173:5173"
+      - "127.0.0.1:5173:5173"
     depends_on:
       - backend
     environment:
@@ -33,4 +33,4 @@ services:
       - backend
       - frontend
     ports:
-      - "80:80"
+      - "8800:80"
