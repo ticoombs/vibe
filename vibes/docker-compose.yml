@@ -9,7 +9,6 @@ services:
     volumes:
       - ./shared_files:/app/shared_files
       - ./users.db:/app/users.db
-      - .:/app
     ports:
       - "8000:8000"
     environment:
