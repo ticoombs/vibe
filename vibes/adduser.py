@@ -11,12 +11,13 @@ def hash_password(password: str, salt: str = None):
     hashed = hashlib.pbkdf2_hmac('sha256', password.encode(), salt.encode(), 100_000)
     return f"{salt}${hashed.hex()}"
 
+
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: adduser.py <username>")
+    if len(sys.argv) < 3:
+        print("Usage: adduser.py <username> <password>")
         sys.exit(1)
     username = sys.argv[1]
-    password = getpass.getpass(f"Password for {username}: ")
+    password = sys.argv[2] #getpass.getpass(f"Password for {username}: ")
     hashed = hash_password(password)
     conn = sqlite3.connect('users.db')
     cur = conn.cursor()

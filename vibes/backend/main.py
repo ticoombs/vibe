@@ -22,7 +22,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DATABASE = "./users.db"
+DATABASE = "/app/backend/users.db"
 FILES_ROOT = "/app/shared_files"  # Use absolute path for Docker compatibility
 
 # --- Auth ---
@@ -84,16 +84,16 @@ def get_current_user(authorization: str = Header(None), db=Depends(get_db)):
         raise HTTPException(status_code=401, detail="Invalid token")
     return token
 
-# --- Utility to ensure test user exists ---
-def ensure_test_user():
-    with sqlite3.connect(DATABASE) as conn:
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM users WHERE username=?", ("test",))
-        if not cur.fetchone():
-            hashed = hash_password("test")
-            cur.execute("INSERT INTO users (username, password) VALUES (?, ?)", ("test", hashed))
-            conn.commit()
-ensure_test_user()
+# # --- Utility to ensure test user exists ---
+# def ensure_test_user():
+#     with sqlite3.connect(DATABASE) as conn:
+#         cur = conn.cursor()
+#         cur.execute("SELECT * FROM users WHERE username=?", ("test",))
+#         if not cur.fetchone():
+#             hashed = hash_password("test")
+#             cur.execute("INSERT INTO users (username, password) VALUES (?, ?)", ("test", hashed))
+#             conn.commit()
+# ensure_test_user()
 
 # --- File Listing Endpoint ---
 @app.get("/files", response_model=List[FileInfo])
