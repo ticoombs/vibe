@@ -12,6 +12,7 @@ import hashlib
 import secrets
 import time
 from fastapi.responses import StreamingResponse
+from urllib.parse import unquote
 
 app = FastAPI()
 
@@ -127,7 +128,9 @@ TOKEN_EXPIRY_SECONDS = 300  # 5 minutes
 
 @app.post("/download-token/{path:path}")
 def get_download_token(path: str, user=Depends(get_current_user)):
-    file_path = os.path.join(FILES_ROOT, path)
+    # Always decode the path
+    decoded_path = unquote(path)
+    file_path = os.path.join(FILES_ROOT, decoded_path)
     if not os.path.isfile(file_path):
         raise HTTPException(status_code=404, detail="File not found")
     token = secrets.token_urlsafe(32)
@@ -136,20 +139,14 @@ def get_download_token(path: str, user=Depends(get_current_user)):
     return {"token": token}
 
 @app.get("/download/{path:path}")
-def download_file(path: str, token: str = None, user=Depends(get_current_user)):
-    file_path = os.path.join(FILES_ROOT, path)
-    # If token is provided, validate it
-    if token:
-        token_data = download_tokens.get(token)
-        now = int(time.time())
-        if not token_data or token_data["path"] != file_path or token_data["expires"] < now:
-            raise HTTPException(status_code=401, detail="Invalid or expired token")
-        # Optionally, delete token after use (one-time)
-        del download_tokens[token]
-        # No need to check user if token is valid
-    else:
-        # Fallback to auth header
-        if not os.path.isfile(file_path):
-            raise HTTPException(status_code=404, detail="File not found")
-        # user is checked by Depends
+def download_file(path: str, token: str = None):
+    if not token:
+        raise HTTPException(status_code=401, detail="Token required for download")
+    decoded_path = unquote(path)
+    file_path = os.path.join(FILES_ROOT, decoded_path)
+    token_data = download_tokens.get(token)
+    now = int(time.time())
+    if not token_data or token_data["path"] != file_path or token_data["expires"] < now:
+        raise HTTPException(status_code=409, detail="Invalid or expired token")
+    del download_tokens[token]
     return FileResponse(file_path, filename=os.path.basename(file_path))

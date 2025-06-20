@@ -1,44 +1,55 @@
 # Vibe File Sharing App
 
-A modern web application to share files from the filesystem with authentication, filtering, and Docker support.
+A modern web application to securely share files from a server filesystem with authentication, filtering, and Docker support.
 
 ## Features
 
-- Login system (SQLite)
-- List and filter 2000+ files/folders by name or modified date
-- Download files
+- User authentication (SQLite, FastAPI)
+- Browse and filter files/folders by name or modified date
+- Download files securely using one-time tokens (no direct or alternate download methods)
 - Modern React frontend (Vite)
 - FastAPI backend (Python)
 - Dockerized for easy deployment
 
-## Quick Start
+## How to Start (Development)
 
-1. Install dependencies for frontend:
-
+1. **Install frontend dependencies:**
    ```bash
+   cd vibes/frontend
    npm install
    ```
 
-2. Start the backend:
-
+2. **Start the backend:**
    ```bash
-   cd backend
+   cd ../backend
    pip install fastapi uvicorn pydantic
    uvicorn main:app --reload --host 0.0.0.0 --port 8000
    ```
 
-3. Start the frontend:
-
+3. **Start the frontend:**
    ```bash
+   cd ../frontend
    npm run dev
    ```
 
-4. Open the app in your browser at `http://localhost:5173`
+4. **Open the app in your browser:**
+   - Go to [http://localhost:5173](http://localhost:5173)
 
-## Docker
+## How to Start (Docker Compose)
 
-A `Dockerfile` will be provided for full-stack deployment.
+1. **From the `vibes/` directory:**
+   ```bash
+   docker-compose up --build
+   ```
+2. **Open the app:**
+   - Go to [http://localhost:8800](http://localhost:8800)
+
+## Usage Notes
+- All downloads require a one-time token, which is automatically handled by the frontend.
+- Users must log in to access file listings and download links.
+- File sizes are displayed in MB.
+- Only files in the `shared_files` directory are accessible.
 
 ---
 
-Replace `../shared_files` in `backend/main.py` with your actual shared files directory.
+For more details, see the code in the `vibes/` directory.

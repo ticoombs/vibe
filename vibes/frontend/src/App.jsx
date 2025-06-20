@@ -122,16 +122,19 @@ function App() {
 
   // Download handler for files with auth and one-time token
   const handleDownload = async (fileName) => {
+    // Encode each path segment for both endpoints
     const filePath = path ? path + '/' + fileName : fileName;
+    const segments = filePath.split('/').map(encodeURIComponent);
+    const encodedPath = segments.join('/');
     try {
-      // Request a one-time token
-      const res = await fetch(`/download-token/${encodeURIComponent(filePath)}`, {
+      // Request a one-time token with encoded path
+      const res = await fetch(`/download-token/${encodedPath}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error('Failed to get download token');
       const data = await res.json();
-      const downloadUrl = `/download/${encodeURIComponent(filePath)}?token=${encodeURIComponent(data.token)}`;
+      const downloadUrl = `/download/${encodedPath}?token=${encodeURIComponent(data.token)}`;
       // Create a temporary <a> and click it to start download
       const a = document.createElement('a');
       a.href = downloadUrl;
@@ -200,7 +203,7 @@ function App() {
                       <button style={{ background: 'none', border: 'none', color: '#b0b0b0', cursor: 'pointer', textDecoration: 'underline', padding: 0, fontWeight: 600, fontSize: 16, fontFamily: 'monospace' }} onClick={() => enterFolder(file.name)} aria-label={`Enter folder ${file.name}`}> <span role="img" aria-label="folder">📂</span> {file.name} </button>
                     ) : file.name}
                   </td>
-                  <td style={{ textAlign: 'right', padding: '10px 6px', fontFamily: 'monospace' }}>{file.is_dir ? '-' : file.size}</td>
+                  <td style={{ textAlign: 'right', padding: '10px 6px', fontFamily: 'monospace' }}>{file.is_dir ? '-' : (file.size / (1024 * 1024)).toFixed(2) + ' MB'}</td>
                   <td style={{ padding: '10px 6px', fontFamily: 'monospace', textAlign: 'justify' }}>{new Date(file.modified * 1000).toLocaleString()}</td>
                   <td style={{ textAlign: 'center', padding: '10px 6px', fontFamily: 'monospace' }}>
                     {!file.is_dir && (

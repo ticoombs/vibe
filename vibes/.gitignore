@@ -1,5 +1,6 @@
 # naughty
 users.db
+shared_files/*
 
 # Logs
 logs
