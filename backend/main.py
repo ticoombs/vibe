@@ -106,6 +106,8 @@ def list_files(q: str = "", sort: str = "name", order: str = "asc", path: str = 
         raise HTTPException(status_code=404, detail="Directory not found")
     files = []
     for entry in os.scandir(dir_path):
+        if entry.name.startswith('.'):
+            continue  # Skip hidden files and directories
         if q.lower() in entry.name.lower():
             stat = entry.stat()
             files.append(FileInfo(
