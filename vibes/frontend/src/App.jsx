@@ -18,7 +18,8 @@ function App() {
 
   useEffect(() => {
     if (!token) return;
-    if (folderCache[path]) {
+    // Only use cache if it is non-empty (avoid caching errors)
+    if (folderCache[path] && Array.isArray(folderCache[path]) && folderCache[path].length > 0) {
       setAllFiles(folderCache[path]);
       return;
     }
@@ -29,13 +30,18 @@ function App() {
         if (res.status === 401) {
           setToken('');
           localStorage.removeItem('token');
-          return [];
+          return null;
         }
+        if (!res.ok) return null;
         return res.json();
       })
       .then(data => {
-        setAllFiles(data);
-        setFolderCache(prev => ({ ...prev, [path]: data }));
+        if (Array.isArray(data) && data.length > 0) {
+          setAllFiles(data);
+          setFolderCache(prev => ({ ...prev, [path]: data }));
+        } else {
+          setAllFiles([]);
+        }
       });
   }, [path, token]);
 

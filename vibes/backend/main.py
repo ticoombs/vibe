@@ -23,7 +23,7 @@ app.add_middleware(
 )
 
 DATABASE = "./users.db"
-FILES_ROOT = "shared_files"  # Use relative path from project root
+FILES_ROOT = "/app/shared_files"  # Use absolute path for Docker compatibility
 
 # --- Auth ---
 def get_db():
