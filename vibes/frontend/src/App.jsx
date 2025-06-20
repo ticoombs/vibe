@@ -120,23 +120,25 @@ function App() {
     else { setSort(col); setOrder('asc'); }
   };
 
-  // Download handler for files with auth
+  // Download handler for files with auth and one-time token
   const handleDownload = async (fileName) => {
-    const fileUrl = `/download/${encodeURIComponent(path ? path + '/' + fileName : fileName)}`;
+    const filePath = path ? path + '/' + fileName : fileName;
     try {
-      const res = await fetch(fileUrl, {
+      // Request a one-time token
+      const res = await fetch(`/download-token/${encodeURIComponent(filePath)}`, {
+        method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error('Download failed');
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
+      if (!res.ok) throw new Error('Failed to get download token');
+      const data = await res.json();
+      const downloadUrl = `/download/${encodeURIComponent(filePath)}?token=${encodeURIComponent(data.token)}`;
+      // Create a temporary <a> and click it to start download
       const a = document.createElement('a');
-      a.href = url;
+      a.href = downloadUrl;
       a.download = fileName;
       document.body.appendChild(a);
       a.click();
       a.remove();
-      window.URL.revokeObjectURL(url);
     } catch (e) {
       alert('Download failed. Please try again.');
     }
@@ -202,9 +204,9 @@ function App() {
                   <td style={{ padding: '10px 6px', fontFamily: 'monospace', textAlign: 'justify' }}>{new Date(file.modified * 1000).toLocaleString()}</td>
                   <td style={{ textAlign: 'center', padding: '10px 6px', fontFamily: 'monospace' }}>
                     {!file.is_dir && (
-                      <button
-                        type="button"
-                        onClick={() => handleDownload(file.name)}
+                      <a
+                        href="#"
+                        onClick={e => { e.preventDefault(); handleDownload(file.name); }}
                         style={{
                           color: '#23272f',
                           background: '#b0b0b0',
@@ -220,7 +222,9 @@ function App() {
                           outline: 'none',
                         }}
                         aria-label={`Download ${file.name}`}
-                      >Download</button>
+                        title="Left click to download, or right click and 'Save As'"
+                        data-filename={file.name}
+                      >Download</a>
                     )}
                   </td>
                 </tr>

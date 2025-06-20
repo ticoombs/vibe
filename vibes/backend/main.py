@@ -10,6 +10,8 @@ from fastapi.responses import FileResponse
 from fastapi import Query
 import hashlib
 import secrets
+import time
+from fastapi.responses import StreamingResponse
 
 app = FastAPI()
 
@@ -118,10 +120,36 @@ def list_files(q: str = "", sort: str = "name", order: str = "asc", path: str = 
         files.sort(key=lambda x: x.modified, reverse=reverse)
     return files
 
-# --- File Download Endpoint ---
-@app.get("/download/{path:path}")
-def download_file(path: str, user=Depends(get_current_user)):
+# --- Token-based Download ---
+# Store tokens in memory for demo (use Redis or DB in production)
+download_tokens = {}
+TOKEN_EXPIRY_SECONDS = 300  # 5 minutes
+
+@app.post("/download-token/{path:path}")
+def get_download_token(path: str, user=Depends(get_current_user)):
     file_path = os.path.join(FILES_ROOT, path)
     if not os.path.isfile(file_path):
         raise HTTPException(status_code=404, detail="File not found")
+    token = secrets.token_urlsafe(32)
+    expires = int(time.time()) + TOKEN_EXPIRY_SECONDS
+    download_tokens[token] = {"path": file_path, "expires": expires}
+    return {"token": token}
+
+@app.get("/download/{path:path}")
+def download_file(path: str, token: str = None, user=Depends(get_current_user)):
+    file_path = os.path.join(FILES_ROOT, path)
+    # If token is provided, validate it
+    if token:
+        token_data = download_tokens.get(token)
+        now = int(time.time())
+        if not token_data or token_data["path"] != file_path or token_data["expires"] < now:
+            raise HTTPException(status_code=401, detail="Invalid or expired token")
+        # Optionally, delete token after use (one-time)
+        del download_tokens[token]
+        # No need to check user if token is valid
+    else:
+        # Fallback to auth header
+        if not os.path.isfile(file_path):
+            raise HTTPException(status_code=404, detail="File not found")
+        # user is checked by Depends
     return FileResponse(file_path, filename=os.path.basename(file_path))
