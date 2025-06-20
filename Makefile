@@ -21,8 +21,7 @@ stop-dev:
 	@echo "Dev servers stopped."
 
 start-prod:
-	docker-compose build --no-cache && \
-	docker-compose up -d 
+	docker-compose up -d --build
 	@echo "Production application started with docker-compose."
 
 stop-prod:

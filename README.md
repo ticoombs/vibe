@@ -37,8 +37,9 @@ A modern web application to securely share files from a server filesystem with a
 
 ## How to Start (Docker Compose)
 
-1. **From the `vibes/` directory:**
+1. **From the `/` directory:**
    ```bash
+   make start-prod
    docker-compose up --build
    ```
 2. **Open the app:**
