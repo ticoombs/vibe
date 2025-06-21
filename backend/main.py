@@ -159,8 +159,6 @@ def download_file(path: str, token: str = None, request: Request = None):
     ip_hash = hashlib.sha256(client_ip.encode()).hexdigest()
     if token_data["ip_hash"] != ip_hash:
         raise HTTPException(status_code=403, detail="Token not valid for this IP address")
-    # Remove token after use
-    del download_tokens[token]
     # Support HTTP Range requests for seeking in video files
     range_header = request.headers.get("range")
     if range_header:
