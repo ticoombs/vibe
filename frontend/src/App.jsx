@@ -147,6 +147,26 @@ function App() {
     }
   };
 
+  // Copy link handler for files
+  const handleCopyLink = async (fileName) => {
+    const filePath = path ? path + '/' + fileName : fileName;
+    const segments = filePath.split('/').map(encodeURIComponent);
+    const encodedPath = segments.join('/');
+    try {
+      const res = await fetch(`/download-token/${encodedPath}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Failed to get download token');
+      const data = await res.json();
+      const downloadUrl = `${window.location.origin}/download/${encodedPath}?token=${encodeURIComponent(data.token)}`;
+      await navigator.clipboard.writeText(downloadUrl);
+      alert('Download link copied to clipboard!');
+    } catch (e) {
+      alert('Failed to copy link. Please try again.');
+    }
+  };
+
   if (!token) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -221,27 +241,49 @@ function App() {
                   )}
                   <td style={{ textAlign: 'center', padding: '10px 6px', fontFamily: 'monospace', minWidth: 100, width: 120 }}>
                     {!file.is_dir && (
-                      <a
-                        href="#"
-                        onClick={e => { e.preventDefault(); handleDownload(file.name); }}
-                        style={{
-                          color: '#23272f',
-                          background: '#b0b0b0',
-                          fontWeight: 600,
-                          border: '1px solid #b0b0b0',
-                          borderRadius: 4,
-                          padding: window.innerWidth > 600 ? '4px 24px' : '4px 10px',
-                          fontFamily: 'monospace',
-                          boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-                          cursor: 'pointer',
-                          fontSize:  window.innerWidth > 600 ? 15 : 18,
-                          textDecoration: 'none',
-                          outline: 'none',
-                        }}
-                        aria-label={`Download ${file.name}`}
-                        title="Left click to download, or right click and 'Save As'"
-                        data-filename={file.name}
-                      >⬇️</a>
+                      <>
+                        <a
+                          href="#"
+                          onClick={e => { e.preventDefault(); handleDownload(file.name); }}
+                          style={{
+                            color: '#23272f',
+                            background: '#b0b0b0',
+                            fontWeight: 600,
+                            border: '1px solid #b0b0b0',
+                            borderRadius: 4,
+                            padding: window.innerWidth > 600 ? '4px 24px' : '4px 10px',
+                            fontFamily: 'monospace',
+                            boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+                            cursor: 'pointer',
+                            fontSize:  window.innerWidth > 600 ? 15 : 18,
+                            textDecoration: 'none',
+                            outline: 'none',
+                            marginRight: 8,
+                          }}
+                          aria-label={`Download ${file.name}`}
+                          title="Left click to download, or right click and 'Save As'"
+                          data-filename={file.name}
+                        >⬇️</a>
+                        <button
+                          onClick={() => handleCopyLink(file.name)}
+                          style={{
+                            color: '#23272f',
+                            background: '#b0b0b0',
+                            fontWeight: 600,
+                            border: '1px solid #b0b0b0',
+                            borderRadius: 4,
+                            padding: window.innerWidth > 600 ? '4px 12px' : '4px 8px',
+                            fontFamily: 'monospace',
+                            boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+                            cursor: 'pointer',
+                            fontSize:  window.innerWidth > 600 ? 15 : 18,
+                            textDecoration: 'none',
+                            outline: 'none',
+                          }}
+                          aria-label={`Copy link for ${file.name}`}
+                          title="Copy download link to clipboard"
+                        >📋</button>
+                      </>
                     )}
                   </td>
                 </tr>

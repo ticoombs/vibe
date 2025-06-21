@@ -126,7 +126,7 @@ def list_files(q: str = "", sort: str = "name", order: str = "asc", path: str = 
 # --- Token-based Download ---
 # Store tokens in memory for demo (use Redis or DB in production)
 download_tokens = {}
-TOKEN_EXPIRY_SECONDS = 300  # 5 minutes
+TOKEN_EXPIRY_SECONDS = 7200  # 2 hours
 
 @app.post("/download-token/{path:path}")
 def get_download_token(path: str, user=Depends(get_current_user)):
