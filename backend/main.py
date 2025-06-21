@@ -13,6 +13,7 @@ import secrets
 import time
 from fastapi.responses import StreamingResponse
 from urllib.parse import unquote
+import mimetypes
 
 app = FastAPI()
 
@@ -193,4 +194,7 @@ def range_streaming_response(file_path, range_header):
         "Accept-Ranges": "bytes",
         "Content-Length": str(end - start + 1),
     }
-    return StreamingResponse(file_iterator(), status_code=206, headers=headers, media_type="application/octet-stream")
+    mime_type, _ = mimetypes.guess_type(file_path)
+    if not mime_type:
+        mime_type = "application/octet-stream"
+    return StreamingResponse(file_iterator(), status_code=206, headers=headers, media_type=mime_type)
