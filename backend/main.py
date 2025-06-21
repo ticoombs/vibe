@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Header
+from fastapi import FastAPI, Depends, HTTPException, status, Header, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -126,10 +126,10 @@ def list_files(q: str = "", sort: str = "name", order: str = "asc", path: str = 
 # --- Token-based Download ---
 # Store tokens in memory for demo (use Redis or DB in production)
 download_tokens = {}
-TOKEN_EXPIRY_SECONDS = 7200  # 2 hours
+TOKEN_EXPIRY_SECONDS = 14400  # 4 hours
 
 @app.post("/download-token/{path:path}")
-def get_download_token(path: str, user=Depends(get_current_user)):
+def get_download_token(path: str, request: Request, user=Depends(get_current_user)):
     # Always decode the path
     decoded_path = unquote(path)
     file_path = os.path.join(FILES_ROOT, decoded_path)
@@ -137,11 +137,14 @@ def get_download_token(path: str, user=Depends(get_current_user)):
         raise HTTPException(status_code=404, detail="File not found")
     token = secrets.token_urlsafe(32)
     expires = int(time.time()) + TOKEN_EXPIRY_SECONDS
-    download_tokens[token] = {"path": file_path, "expires": expires}
+    # Get client IP and hash it
+    client_ip = request.client.host
+    ip_hash = hashlib.sha256(client_ip.encode()).hexdigest()
+    download_tokens[token] = {"path": file_path, "expires": expires, "ip_hash": ip_hash}
     return {"token": token}
 
 @app.get("/download/{path:path}")
-def download_file(path: str, token: str = None):
+def download_file(path: str, token: str = None, request: Request = None):
     if not token:
         raise HTTPException(status_code=401, detail="Token required for download")
     decoded_path = unquote(path)
@@ -150,5 +153,44 @@ def download_file(path: str, token: str = None):
     now = int(time.time())
     if not token_data or token_data["path"] != file_path or token_data["expires"] < now:
         raise HTTPException(status_code=409, detail="Invalid or expired token")
+    # Validate IP hash
+    client_ip = request.client.host
+    ip_hash = hashlib.sha256(client_ip.encode()).hexdigest()
+    if token_data["ip_hash"] != ip_hash:
+        raise HTTPException(status_code=403, detail="Token not valid for this IP address")
+    # Remove token after use
     del download_tokens[token]
+    # Support HTTP Range requests for seeking in video files
+    range_header = request.headers.get("range")
+    if range_header:
+        return range_streaming_response(file_path, range_header)
     return FileResponse(file_path, filename=os.path.basename(file_path))
+
+def range_streaming_response(file_path, range_header):
+    import re
+    size = os.path.getsize(file_path)
+    match = re.match(r"bytes=(\d+)-(\d*)", range_header)
+    if not match:
+        raise HTTPException(status_code=416, detail="Invalid Range header")
+    start = int(match.group(1))
+    end = int(match.group(2)) if match.group(2) else size - 1
+    if start > end or end >= size:
+        raise HTTPException(status_code=416, detail="Requested Range Not Satisfiable")
+    def file_iterator():
+        with open(file_path, "rb") as f:
+            f.seek(start)
+            remaining = end - start + 1
+            chunk_size = 1024 * 1024
+            while remaining > 0:
+                read_size = min(chunk_size, remaining)
+                data = f.read(read_size)
+                if not data:
+                    break
+                yield data
+                remaining -= len(data)
+    headers = {
+        "Content-Range": f"bytes {start}-{end}/{size}",
+        "Accept-Ranges": "bytes",
+        "Content-Length": str(end - start + 1),
+    }
+    return StreamingResponse(file_iterator(), status_code=206, headers=headers, media_type="application/octet-stream")
